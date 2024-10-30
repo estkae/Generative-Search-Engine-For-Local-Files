@@ -15,7 +15,7 @@ import requests
 print("Starting the application...")
 
 # Global variables
-model = SentenceTransformer('sentence-transformers/msmarco-bert-base-dot-v5')
+model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
 dimension = 768
 index = faiss.IndexFlatIP(dimension)
 metadata = []
@@ -145,17 +145,17 @@ def semantic_search(query, k=10):
 # Answer generation function
 def generate_answer(query, context):
     print(f"Generating answer for query: '{query}'")
-    prompt = f"""Answer the user's question using the documents given in the context. In the context are documents that should contain an answer. Please always reference the document ID (in square brackets, for example [0],[1]) of the document that was used to make a claim. Use as many citations and documents as it is necessary to answer the question.
+    prompt = f"""Systemanweisung: Du bist ein hilfsbereiter Assistent. Antworte immer auf Deutsch, 
+unabhängig von der Sprache der Frage. Beantworten Sie die Frage des Benutzers anhand der im Kontext angegebenen Dokumente. Im Kontext stehen Dokumente, die eine Antwort enthalten sollen. Bitte geben Sie immer die Dokument-ID (in eckigen Klammern, z.B. [0],[1]) des Dokuments an, das für eine Behauptung verwendet wurde. Verwenden Sie so viele Zitate und Dokumente wie nötig, um die Frage zu beantworten.
 
-Context:
-{context}
+Context: {context} 
 
 Question: {query}
 
 Answer:"""
 
     print("Sending prompt to Ollama")
-    response = ollama.generate(model='tinyllama', prompt=prompt)
+    response = ollama.generate(model='llama3.2', prompt=prompt)
     print("Received response from Ollama")
     return response['response']
 
@@ -244,7 +244,6 @@ def main():
                 
                 # Prepare context for answer generation
                 context = "\n\n".join([f"{i}: {result['content']}" for i, result in enumerate(search_results)])
-                
                 # Generate answer
                 answer = generate_answer(question, context)
                 
